@@ -35,7 +35,7 @@ class Lesson(models.Model):
     preview = models.ImageField(
         upload_to="lesson_previews/", verbose_name="Фото", null=True, blank=True
     )
-    video_url = models.URLField()
+    video_url = models.URLField(verbose_name="Ссылка на видео", null=True, blank=True)
 
     def __str__(self):
         return self.title
