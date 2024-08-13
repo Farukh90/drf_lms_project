@@ -1,12 +1,12 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from courses.models import Course, Lesson
+from courses.models import Course, Lesson, Payment
 
 
 class LessonSerializer(ModelSerializer):
     class Meta:
         model = Lesson
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CourseSerializer(ModelSerializer):
@@ -17,7 +17,7 @@ class CourseSerializer(ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('id', 'title', 'lessons_count')
+        fields = ("id", "title", "lessons_count")
 
 
 class CourseDetailSerializer(ModelSerializer):
@@ -29,4 +29,17 @@ class CourseDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('title', 'lessons_count', 'lessons')
+        fields = ("title", "lessons_count", "lessons")
+
+
+class PaymentSerializer(ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = [
+            "id",
+            "payment_date",
+            "paid_course",
+            "separately_paid_lesson",
+            "payment_amount",
+            "payment_method",
+        ]

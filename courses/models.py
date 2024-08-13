@@ -1,5 +1,4 @@
 from django.db import models
-from users.models import User
 
 
 class Course(models.Model):
@@ -47,16 +46,10 @@ class Lesson(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-        ('cash', 'Наличные'),
-        ('transfer', 'Перевод на счет'),
+        ("cash", "Наличные"),
+        ("transfer", "Перевод на счет"),
     ]
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name="Пользователь",
-        related_name="payments",
-    )
     payment_date = models.DateField(verbose_name="Дата оплаты")
     paid_course = models.ForeignKey(
         Course,
@@ -84,7 +77,7 @@ class Payment(models.Model):
     )
 
     def __str__(self):
-        return f"Платеж от {self.user} на сумму {self.payment_amount}"
+        return f"Платеж на сумму {self.payment_amount}"
 
     class Meta:
         verbose_name = "Платеж"
