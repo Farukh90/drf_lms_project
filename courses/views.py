@@ -29,18 +29,32 @@ class CourseViewSet(ModelViewSet):
 
 
 class LessonViewSet(ModelViewSet):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs.get('course_id')
+        if course_id:
+            return Lesson.objects.filter(course_id=course_id)
+        return Lesson.objects.all()
 
 
 class LessonCreateApiView(CreateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
+    def perform_create(self, serializer):
+        course_id = self.kwargs.get('course_id')
+
+        course = Course.objects.get(id=course_id)
+        serializer.save(course=course)
+
 
 class LessonListApiView(ListAPIView):
-    queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+    def get_queryset(self):
+        course_id = self.kwargs.get('course_id')
+        return Lesson.objects.filter(course_id=course_id)
 
 
 class LessonRetrieveApiView(RetrieveAPIView):
