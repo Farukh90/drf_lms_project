@@ -7,7 +7,8 @@ from courses.views import (
     LessonRetrieveApiView,
     LessonUpdateApiView,
     LessonDestroyApiView,
-    PaymentListView, SubscriptionView,
+    PaymentListView,
+    SubscriptionView,
 )
 
 app_name = "courses"
@@ -40,12 +41,8 @@ urlpatterns = [
         name="lessons_update",
     ),
     path("payments/", PaymentListView.as_view(), name="payment-list"),
-
-    path('subscriptions/', SubscriptionView.as_view(), name='subscription_view'),
-
+    path("subscriptions/", SubscriptionView.as_view(), name="subscription_view"),
     path("", include(router.urls)),
-
-
 ]
 
 # Включаем маршруты из роутера для курсов

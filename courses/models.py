@@ -94,5 +94,5 @@ class Payment(models.Model):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

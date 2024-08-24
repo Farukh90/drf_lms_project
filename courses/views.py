@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404
 
 from courses.filters import PaymentFilter
 from courses.models import Course, Lesson, Payment, Subscription
+from courses.paginators import MyPaginator
 from courses.serializers import (
     CourseSerializer,
     LessonSerializer,
@@ -29,6 +30,7 @@ from users.permissions import IsModer, IsOwner, IsOwnerAndNotModer
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
+    pagination_class = MyPaginator
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -68,6 +70,7 @@ class LessonCreateApiView(CreateAPIView):
 class LessonListApiView(ListAPIView):
     serializer_class = LessonSerializer
     permission_classes = (IsAuthenticated, IsOwnerAndNotModer)
+    pagination_class = MyPaginator
 
     def get_queryset(self):
         course_id = self.kwargs.get("course_id")
@@ -102,15 +105,17 @@ class PaymentListView(ListCreateAPIView):
 class SubscriptionView(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get('course_id')
+        course_id = request.data.get("course_id")
 
         course = get_object_or_404(Course, id=course_id)
-        subscription, created = Subscription.objects.get_or_create(user=user, course=course)
+        subscription, created = Subscription.objects.get_or_create(
+            user=user, course=course
+        )
 
         if created:
-            message = 'подписка добавлена'
+            message = "подписка добавлена"
         else:
             subscription.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
 
         return Response({"message": message}, status=status.HTTP_200_OK)

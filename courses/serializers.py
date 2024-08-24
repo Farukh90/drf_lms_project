@@ -6,6 +6,7 @@ from courses.validators import validate_youtube_link
 
 class LessonSerializer(serializers.ModelSerializer):
     video_url = serializers.CharField(validators=[validate_youtube_link])
+
     class Meta:
         model = Lesson
         fields = "__all__"
@@ -15,8 +16,8 @@ class CourseSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
     subscription = serializers.SerializerMethodField()
 
-    def get_is_subscribed(self, obj):
-        user = self.context['request'].user
+    def get_subscription(self, obj):
+        user = self.context["request"].user
         return Subscription.objects.filter(user=user, course=obj).exists()
 
     def get_lessons_count(self, course):
@@ -55,4 +56,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
-        fields = ('user', 'course',)
+        fields = (
+            "user",
+            "course",
+        )
