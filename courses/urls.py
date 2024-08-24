@@ -41,7 +41,7 @@ urlpatterns = [
         name="lessons_update",
     ),
     path("payments/", PaymentListView.as_view(), name="payment-list"),
-    path("subscriptions/", SubscriptionView.as_view(), name="subscription_view"),
+    path("<int:course_id>/subscriptions/", SubscriptionView.as_view(), name="subscription_view"),
     path("", include(router.urls)),
 ]
 
