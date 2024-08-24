@@ -131,10 +131,10 @@ class SubscriptionTestCase(APITestCase):
 
     def test_subscription_non_existent_course(self):
         """Тест подписки на несуществующий курс."""
-        url = reverse('courses:subscription_view', args=(9999,))
+        url = reverse('courses:subscription_view', args=(123123,))
         data = {
             "user": self.user.pk,
-            "course_id": 9999
+            "course_id": 123123
         }
         response = self.client.post(url, data)
 
