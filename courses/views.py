@@ -1,6 +1,9 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.response import Response
 from rest_framework.generics import (
     CreateAPIView,
     ListAPIView,
@@ -9,8 +12,12 @@ from rest_framework.generics import (
     DestroyAPIView,
     ListCreateAPIView,
 )
+
+from django.shortcuts import get_object_or_404
+
+
 from courses.filters import PaymentFilter
-from courses.models import Course, Lesson, Payment
+from courses.models import Course, Lesson, Payment, Subscription
 from courses.serializers import (
     CourseSerializer,
     LessonSerializer,
@@ -67,7 +74,6 @@ class LessonListApiView(ListAPIView):
         return Lesson.objects.filter(course_id=course_id)
 
 
-
 class LessonRetrieveApiView(RetrieveAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
@@ -91,3 +97,20 @@ class PaymentListView(ListCreateAPIView):
     serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PaymentFilter
+
+
+class SubscriptionView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course_id')
+
+        course = get_object_or_404(Course, id=course_id)
+        subscription, created = Subscription.objects.get_or_create(user=user, course=course)
+
+        if created:
+            message = 'подписка добавлена'
+        else:
+            subscription.delete()
+            message = 'подписка удалена'
+
+        return Response({"message": message}, status=status.HTTP_200_OK)
