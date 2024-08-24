@@ -1,16 +1,18 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework import serializers
 
 from courses.models import Course, Lesson, Payment
+from courses.validators import validate_youtube_link
 
 
-class LessonSerializer(ModelSerializer):
+class LessonSerializer(serializers.ModelSerializer):
+    video_url = serializers.CharField(validators=[validate_youtube_link])
     class Meta:
         model = Lesson
         fields = "__all__"
 
 
-class CourseSerializer(ModelSerializer):
-    lessons_count = SerializerMethodField()
+class CourseSerializer(serializers.ModelSerializer):
+    lessons_count = serializers.SerializerMethodField()
 
     def get_lessons_count(self, course):
         return course.lessons.count()
@@ -20,8 +22,8 @@ class CourseSerializer(ModelSerializer):
         fields = ("id", "title", "lessons_count", "owner")
 
 
-class CourseDetailSerializer(ModelSerializer):
-    lessons_count = SerializerMethodField()
+class CourseDetailSerializer(serializers.ModelSerializer):
+    lessons_count = serializers.SerializerMethodField()
     lessons = LessonSerializer(many=True, read_only=True)
 
     def get_lessons_count(self, course):
@@ -32,7 +34,7 @@ class CourseDetailSerializer(ModelSerializer):
         fields = ("title", "lessons_count", "lessons")
 
 
-class PaymentSerializer(ModelSerializer):
+class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = [
