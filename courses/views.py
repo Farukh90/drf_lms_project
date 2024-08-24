@@ -15,7 +15,6 @@ from rest_framework.generics import (
 
 from django.shortcuts import get_object_or_404
 
-
 from courses.filters import PaymentFilter
 from courses.models import Course, Lesson, Payment, Subscription
 from courses.paginators import MyPaginator
@@ -103,9 +102,8 @@ class PaymentListView(ListCreateAPIView):
 
 
 class SubscriptionView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, course_id, *args, **kwargs):
         user = request.user
-        course_id = request.data.get("course_id")
 
         course = get_object_or_404(Course, id=course_id)
         subscription, created = Subscription.objects.get_or_create(
