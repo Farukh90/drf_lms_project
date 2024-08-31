@@ -29,6 +29,7 @@ from courses.services import create_session
 from users.permissions import IsModer, IsOwner, IsOwnerAndNotModer
 from courses.tasks import send_info
 
+
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     pagination_class = MyPaginator
@@ -64,8 +65,6 @@ class CourseViewSet(ModelViewSet):
         for s in subscriptions:
             emails.append(s.user.email)
 
-        print(emails)
-        print(course.id)
         send_info.delay(course.id, emails, f'Изменен курс {course.title}')
 
 
