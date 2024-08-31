@@ -27,7 +27,7 @@ from courses.serializers import (
 )
 from courses.services import create_session
 from users.permissions import IsModer, IsOwner, IsOwnerAndNotModer
-
+from courses.tasks import send_info
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
@@ -55,6 +55,18 @@ class CourseViewSet(ModelViewSet):
             )
 
         return super().get_permissions()
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+
+        emails = []
+        subscriptions = Subscription.objects.filter(course=course)
+        for s in subscriptions:
+            emails.append(s.user.email)
+
+        print(emails)
+        print(course.id)
+        send_info.delay(course.id, emails, f'Изменен курс {course.title}')
 
 
 class LessonCreateApiView(CreateAPIView):
