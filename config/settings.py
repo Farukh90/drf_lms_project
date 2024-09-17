@@ -76,11 +76,11 @@ REST_FRAMEWORK = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("NAME"),
-        "USER": "postgres",
-        "HOST": "localhost",
-        "PORT": "5432",
-        "PASSWORD": os.getenv("PASSWORD"),
+        "NAME": os.getenv("POSTGRES_DB"),
+        "USER": os.getenv("POSTGRES_USER"),
+        "HOST": os.getenv("POSTGRES_HOST"),
+        "PORT": os.getenv("POSTGRES_PORT"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
     }
 }
 
@@ -124,7 +124,7 @@ SIMPLE_JWT = {
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
 
 # URL-адрес брокера сообщений
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")  # Например, Redis, который по умолчанию работает на порту 6379
+CELERY_BROKER_URL = os.getenv("REDIS_CELERY")  # Например, Redis, который по умолчанию работает на порту 6379
 
 # URL-адрес брокера результатов, также Redis
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
@@ -142,8 +142,8 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 CELERY_BEAT_SCHEDULE = {
     'task-name': {
-        'task': 'courses.tasks.deactivate_user',  # Путь к задаче
-        'schedule': timedelta(seconds=3),  # Расписание выполнения задачи (например, каждые 10 минут)
+        'task': 'courses.tasks.deactivate_user',
+        'schedule': timedelta(seconds=20),
     },
 }
 
