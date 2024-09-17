@@ -1,5 +1,4 @@
 from rest_framework.test import APITestCase
-from rest_framework.serializers import ValidationError
 from courses.models import Course, Lesson
 from users.models import User
 
@@ -17,6 +16,7 @@ class LessonTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_lesson_retrieve(self):
+        """Тест получения информации об уроке."""
         url = reverse('courses:lessons_retrieve', args=(self.course.pk, self.lesson.pk))
         response = self.client.get(url)
         data = response.json()
@@ -28,6 +28,7 @@ class LessonTestCase(APITestCase):
         )
 
     def test_lesson_create(self):
+        """Тест создания нового урока."""
         url = reverse('courses:lessons_create', args=(self.course.pk,))
         data = {
             "title": "Урок 1",
@@ -55,6 +56,7 @@ class LessonTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_lesson_update(self):
+        """Тест обновления информации об уроке."""
         url = reverse('courses:lessons_update', args=(self.course.pk, self.lesson.pk))
         data = {
             "title": "Урок 2"
@@ -69,6 +71,7 @@ class LessonTestCase(APITestCase):
         )
 
     def test_lesson_delete(self):
+        """Тест удаления урока."""
         url = reverse('courses:lessons_destroy', args=(self.course.pk, self.lesson.pk))
         response = self.client.delete(url)
         self.assertEqual(
@@ -76,6 +79,7 @@ class LessonTestCase(APITestCase):
         )
 
     def test_lesson_list(self):
+        """Тест получения списка уроков для курса."""
         url = reverse('courses:lessons_list', args=(self.course.pk,))
         response = self.client.get(url)
         data = response.json()
@@ -99,19 +103,34 @@ class SubscriptionTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_subscription_post(self):
-        url = reverse('courses:subscription_view')
+        """Тест подписки на курс."""
+        url = reverse('courses:subscription_view', args=(self.course.pk,))
+        data = {"course_id": self.course.pk}
+
+        self.assertTrue(Course.objects.filter(pk=self.course.pk).exists())
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get('message'), 'подписка добавлена')
+
+    def test_unsubscription_post(self):
+        """Тест отписки от курса."""
+        url = reverse('courses:subscription_view', args=(self.course.pk,))
         data = {
             "user": self.user.pk,
             "course_id": self.course.pk
         }
+        self.client.post(url, data)
 
-        # Проверка курса перед отправкой запроса
-        self.assertTrue(Course.objects.filter(pk=self.course.pk).exists())
         response = self.client.post(url, data)
-
-        self.assertEqual(response.data.get('message'), 'подписка добавлена')
-        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.get('message'), 'подписка удалена')
-        response = self.client.post(url, data)
-        self.assertEqual(response.data.get('message'), 'подписка добавлена')
 
+    def test_subscription_non_existent_course(self):
+        """Тест подписки на несуществующий курс."""
+        url = reverse('courses:subscription_view', args=(123123,))
+        data = {"course_id": 123123}
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data.get('detail'), 'No Course matches the given query.')

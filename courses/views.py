@@ -1,3 +1,4 @@
+import stripe
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -15,7 +16,6 @@ from rest_framework.generics import (
 
 from django.shortcuts import get_object_or_404
 
-
 from courses.filters import PaymentFilter
 from courses.models import Course, Lesson, Payment, Subscription
 from courses.paginators import MyPaginator
@@ -25,7 +25,9 @@ from courses.serializers import (
     CourseDetailSerializer,
     PaymentSerializer,
 )
+from courses.services import create_session
 from users.permissions import IsModer, IsOwner, IsOwnerAndNotModer
+from courses.tasks import send_info
 
 
 class CourseViewSet(ModelViewSet):
@@ -54,6 +56,16 @@ class CourseViewSet(ModelViewSet):
             )
 
         return super().get_permissions()
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+
+        emails = []
+        subscriptions = Subscription.objects.filter(course=course)
+        for s in subscriptions:
+            emails.append(s.user.email)
+
+        send_info.delay(course.id, emails, f'Изменен курс {course.title}')
 
 
 class LessonCreateApiView(CreateAPIView):
@@ -102,10 +114,31 @@ class PaymentListView(ListCreateAPIView):
     filterset_class = PaymentFilter
 
 
+class CoursePaymentCreateAPIView(CreateAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+
+    def perform_create(self, serializer):
+        course_id = self.kwargs.get("course_id")
+        course = Course.objects.get(id=course_id)
+        payment = serializer.save(user=self.request.user, paid_course=course)
+
+        try:
+            course_name = course.title
+            session_id, payment_link = create_session(
+                payment.payment_amount, f"к оплате {course_name}"
+            )
+            payment.session_id = session_id
+            payment.payment_link = payment_link
+            payment.save()
+        except stripe.error.StripeError as e:
+            print(f"Ошибка при создании сессии Stripe: {e}")
+            raise
+
+
 class SubscriptionView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, course_id, *args, **kwargs):
         user = request.user
-        course_id = request.data.get("course_id")
 
         course = get_object_or_404(Course, id=course_id)
         subscription, created = Subscription.objects.get_or_create(
